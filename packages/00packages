@@ -1,6 +1,18 @@
 ; list of packages
 ; this file contains all manifests
 
+[I2C]
+name: I2C
+category: Tools
+author: Christian Hehr &lt;christian@fa-hehr.de&gt;
+icon: icon.png
+desc: I2C Address Bus Scanner
+exec: I2C.py
+managed: yes
+uuid: c0cce9f0-2c50-11e7-9598-0800200c9a66
+version: 1.0
+firmware: >=0.9.0
+
 [cpu_load]
 name: CPU-Load
 category: System
@@ -26,16 +38,3 @@ managed: yes
 uuid: 3434343-5199-11e6-beb8-9e71128cae7
 version: 0.9.5
 firmware: >=0.9.0, <0.9.3
-
-[radio]
-name: Radio
-category: Tests
-author: Raphael Jacob
-icon: icon.png
-desc: Webradio-Player
-html: web.py
-exec: radio.py
-managed: yes
-uuid: ad5e0ea4-4606-4254-add6-60c452c3db36
-version: 1.0
-firmware: >=0.9.0
