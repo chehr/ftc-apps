@@ -12,29 +12,3 @@ managed: yes
 uuid: c0cce9f0-2c50-11e7-9598-0800200c9a66
 version: 1.0
 firmware: >=0.9.0
-
-[cpu_load]
-name: CPU-Load
-category: System
-author: Leon Schnieber (olagino)
-icon: icon.png
-desc: A small App for the TXT to check the average processor load and the available RAM.
-url: http://leon.home-webserver.de/wiki/doku.php?id=fischertechnik:start
-exec: main.py
-managed: yes
-uuid: 443dd03b-d671-4103-b035-924c175e4e1c
-version: 1
-firmware: >=0.9.0
-
-[iolyser]
-name: IOlyser
-category: System
-author: Leon Schnieber (olagino)
-icon: icon.png
-desc: This tool is used for testing the IOs of the TXT without a computer nearby.
-url: http://localhost/
-exec: script.py
-managed: yes
-uuid: 3434343-5199-11e6-beb8-9e71128cae7
-version: 0.9.5
-firmware: >=0.9.0, <0.9.3
