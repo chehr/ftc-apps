@@ -56,7 +56,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="15.839192"
      inkscape:cx="24.031814"
-     inkscape:cy="34.329233"
+     inkscape:cy="34.513088"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -113,31 +113,31 @@
        sodipodi:cx="15.899113" />
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;line-height:0%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       x="8.8902721"
-       y="931.26233"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:26.66666667px;line-height:0%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;font-variant-position:super;"
+       x="13.277271"
+       y="923.2486"
        id="text3341"
        transform="scale(0.90665061,1.1029607)"><tspan
          sodipodi:role="line"
          id="tspan3343"
-         x="8.8902721"
-         y="931.26233"
-         style="font-size:32px;line-height:1.25;stroke-width:0.5">I<tspan
-   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-position:super;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start"
+         x="13.277271"
+         y="923.2486"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:26.66666667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr;text-anchor:start;stroke-width:0.5;font-variant-position:super;">I<tspan
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:26.66666667px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-position:super;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr;text-anchor:start;"
    id="tspan92">2</tspan>C</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:8px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none"
-       x="32.649609"
-       y="1034.0619"
+       style="font-style:normal;font-weight:normal;font-size:9.33333333px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;-inkscape-font-specification:'sans-serif, Normal';font-stretch:normal;font-variant:normal;writing-mode:lr;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;"
+       x="32.586472"
+       y="1028.0641"
        id="text96"><tspan
          sodipodi:role="line"
          id="tspan94"
-         x="32.649609"
-         y="1034.0619">Address Bus</tspan><tspan
+         x="32.586472"
+         y="1028.0641">Address Bus</tspan><tspan
          sodipodi:role="line"
-         x="32.649609"
-         y="1044.0619"
+         x="32.586472"
+         y="1038.0641"
          id="tspan98">Scanner</tspan></text>
   </g>
 </svg>
