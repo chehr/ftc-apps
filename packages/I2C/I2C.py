@@ -5,7 +5,6 @@ import sys, os
 from TouchStyle import *
 
 import smbus
-#import struct, array, math
 
 bus = smbus.SMBus(1) #1 indicates /dev/i2c-1
 
@@ -34,7 +33,6 @@ class TouchGuiApplication(TouchApplication):
             
        
         i2c = [hex(n) for n in I2C]
-        #print(i2c)
         i2c = str(i2c)
             
 
@@ -61,9 +59,8 @@ class TouchGuiApplication(TouchApplication):
         self.vbox.addStretch()
       
         self.win.centralWidget.setLayout(self.vbox)
-        self.win.show()    
-      
-        
+        self.win.show() 
+     
         self.exec_()        
 
 

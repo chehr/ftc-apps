@@ -1,0 +1,11 @@
+[app]
+name: BNO055
+category: Tools
+author: Christian Hehr &lt;christian@fa-hehr.de&gt;
+icon: icon.png
+desc: BNO055 motion sensor. Shows the acceleration and magnetometer sensor data from BNO055 which must be connected via I2C
+exec: bno055.py
+managed: yes
+uuid: a9fb0a90-29e9-11e7-9598-0800200c9a66
+version: 0.1
+firmware: >=0.9.1
