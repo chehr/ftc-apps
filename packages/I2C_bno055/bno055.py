@@ -3,19 +3,8 @@
 #
 import time, struct, array, sys, os
 import smbus
-import logging
 from TouchStyle import *
 
-handler = logging.StreamHandler(sys.stdout)
-frm = logging.Formatter("{asctime}{levelname}:{message}",
-                        "%d.%m.%Y %H:%M:%S", style="{")
-handler.setFormatter(frm)
-logger = logging.getLogger()
-logger.addHandler(handler)
-logger.setLevel(logging.DEBUG)
-logger.critical("Ein kritischer Fehler")
-logger.warning("Und eine Warnung hinterher")
-logger.info("Info")
 
 
 class ValueWidget(QSlider):
@@ -23,11 +12,6 @@ class ValueWidget(QSlider):
         QSlider.__init__(self, Qt.Horizontal, parent)
         self.setDisabled(True)
         self.setRange(-100, 100)
-
-# class SmallLabel(QLabel):
-#    def __init__(self, str, parent=None):
-#        super(SmallLabel, self).__init__(str, parent)
-#        self.setObjectName("smalllabel")
 
 class TinyLabel(QLabel):
     def __init__(self, str, parent=None):
@@ -77,7 +61,7 @@ class TouchGuiApplication(TouchApplication):
 
             # Acc XYZ value
             self.axyz_lbl = TinyLabel("Acceleration:", self.w)
-            self.axyz_lbl.setAlignment(Qt.AlignCenter)
+            #self.axyz_lbl.setAlignment(Qt.AlignCenter)
             self.vbox.addWidget(self.axyz_lbl)
 
             self.acc_grid_w = QWidget()
@@ -99,7 +83,7 @@ class TouchGuiApplication(TouchApplication):
 
             # Magnetometer
             lbl = TinyLabel("Magnetometer [nT]", self.w)
-            #lbl.setAlignment(Qt.AlignCenter)
+            lbl.setAlignment(Qt.AlignCenter)
             self.vbox.addWidget(lbl)
 
             # Mag XYZ value
@@ -155,14 +139,6 @@ class TouchGuiApplication(TouchApplication):
         self.axyz_lbl.setText("xyz: {0:20}".format(axyz))
         mxyz=str(m)
         self.mxyz_lbl.setText("xyz: {0:20}".format(mxyz))
-        
-        #print("Euler: ",self.bno.getVector(BNO055.VECTOR_EULER))
-        #file.write("Euler: ",bno.getVector(BNO055.VECTOR_EULER),'\n')
-        #print("Accelerometer: ",self.bno.getVector(BNO055.VECTOR_ACCELEROMETER))
-        #print("Magnetometer: ",self.bno.getVector(BNO055.VECTOR_MAGNETOMETER))
-        #print("Temperature:", t, "deg C")
-        #print("Revision Info: ",self.bno.getRevInfo())
-        #print("Calibration Info: ",self.bno.getCalibration())
         time.sleep(0.1)
 
 
@@ -428,14 +404,13 @@ class BNO055:
 
       if vectorType == BNO055.VECTOR_MAGNETOMETER: scalingFactor = 16.0
       elif vectorType == BNO055.VECTOR_GYROSCOPE:  scalingFactor = 900.0
-      elif vectorType == BNO055.VECTOR_EULER:   scalingFactor = 16.0
-      elif vectorType == BNO055.VECTOR_GRAVITY: scalingFactor = 100.0
-      else:                scalingFactor = 1.0
+      elif vectorType == BNO055.VECTOR_EULER:      scalingFactor = 16.0
+      elif vectorType == BNO055.VECTOR_GRAVITY:    scalingFactor = 100.0
+      else:                                        scalingFactor = 1.0
       return tuple([i/scalingFactor for i in xyz])
 
    def getQuat(self):
       buf = self.readBytes(BNO055.BNO055_QUATERNION_DATA_W_LSB_ADDR, 8)
-      #wxyz = (struct.unpack('hhhh', ''.join(struct.pack('BBBBBBBB', buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7]))))
       wxyz = (struct.unpack('hhhh', array.array('B', buf)))
       return tuple([i * (1.0 / (1 << 14)) for i in wxyz])
 
