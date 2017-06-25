@@ -1,9 +1,13 @@
-#! /usr/bin/env python3
+# ! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-import time, struct, array, sys, os
-import smbus
+import os, struct, sys
+from datetime import datetime
+from time import *
 from TouchStyle import *
+
+import smbus, xlwt
+
 
 
 
@@ -33,6 +37,10 @@ class TouchGuiApplication(TouchApplication):
         self.vbox = QVBoxLayout()
         self.vbox.addStretch()
 
+        # Define Excel file
+        #excel_xf = xlwt.easyxf
+        
+        #Start I2C Communication
         try:
             self.bno = BNO055()
             self.bno.begin()
@@ -106,11 +114,27 @@ class TouchGuiApplication(TouchApplication):
             self.mag_grid.addWidget(self.mag_z_value,2,1)
             self.vbox.addWidget(self.mag_grid_w)
 
-            # start a qtimer to read sensor data
+            # Print BNO055 software revision and other diagnostic data.
+            accel_rev, mag_rev, gyro_rev, sw_rev, bl_rev = self.bno.getRevInfo()
+            print('Software version:   {0}'.format(sw_rev))
+            print('Bootloader version: {0}'.format(bl_rev))
+            print('Accelerometer ID:   0x{0:02X}'.format(accel_rev))
+            print('Magnetometer ID:    0x{0:02X}'.format(mag_rev))
+            print('Gyroscope ID:       0x{0:02X}\n'.format(gyro_rev))
+        
+
+            # start a qtimer to read the sensor data
             self.timer = QTimer(self)
-            self.timer.timeout.connect(self.on_timer)
+            #self.timer.setSingleShot(False)
+            self.timer.timeout.connect(lambda: self.__on_timer()) # lambda will avoid the evaluation of the fuction call
             self.timer.start(100)
-            
+
+            global t0, excel_xf, data
+            excel_xf = xlwt.easyxf
+            data=[]
+            t0 = time()
+            print("\nstart: %s" % ctime(t0))
+                  
             
         self.vbox.addStretch()
         self.w.centralWidget.setLayout(self.vbox)
@@ -118,7 +142,9 @@ class TouchGuiApplication(TouchApplication):
         self.w.show()
         self.exec_()
 
-    def on_timer(self):
+
+        
+    def __on_timer(self):
         # get the accelerometer and magnetometer values
         a = self.bno.getVector(BNO055.VECTOR_ACCELEROMETER) # Tuple
         self.acc_x_value.setValue(a[0])
@@ -139,9 +165,50 @@ class TouchGuiApplication(TouchApplication):
         self.axyz_lbl.setText("xyz: {0:20}".format(axyz))
         mxyz=str(m)
         self.mxyz_lbl.setText("xyz: {0:20}".format(mxyz))
-        time.sleep(0.1)
 
+        # Read Sensor data for SD-Card storage as Excel file
+        sensordata = a
+        dataline=[datetime.now()]
+        dataline.extend(list(a))
+        dataline.extend(list(m))
+        data.extend([dataline])
+        
+        t1 = time()
+        dt = t1-t0
+        if dt >=10:  # 10s Data logging time
+            self.timer.stop()
+            print("since starting elapsed %.2f s" % (dt))
+            first_line = ['Time', 'AX [g]', 'AY [g]', 'AZ [g]', 'MX [nT]', 'MY [nT]', 'MZ [nT]', 'GX [deg/s]', 'GY [deg/s]', 'GZ [deg/s]',
+                        'Heading [0deg..360deg]', 'Roll [-90deg..+90deg]', 'Pitch [-180deg..+180deg]', 'QW [-]', 'QX [-]', 'QY [-]', 'QZ [-]', 'LAX [g]', 'LAY [g]', 'LAZ [g]',
+                        'GAX [g]', 'GAY [g]', 'GAZ [g]', 'Temperature [deg C]']
+            kinds =  'date int int int int int int int int int int int'.split()
+            first_line_xf = excel_xf('font: bold on; align: wrap on, vert centre, horiz center')
+            kind_to_xf_map = {
+                        'date': excel_xf(num_format_str='hh:mm:ss'), #DD.MM.YYYY removed
+                        'int': excel_xf(num_format_str='0.000'),
+                        'text': excel_xf(),
+                        }
+            data_xfs = [kind_to_xf_map[k] for k in kinds]
+            print("Daten auf SD Karte schreiben...")
+            self.__write_xls('Datalogger.xls', 'BNO055', first_line, data, first_line_xf, data_xfs)
+                        
+    # Write data to Excel file
+    def __write_xls(self, file_name, sheet_name, headings, data, heading_xf, data_xfs):
+        book = xlwt.Workbook()
+        sheet = book.add_sheet(sheet_name)
+        rowx = 0
+        for colx, value in enumerate(headings):
+            sheet.write(rowx, colx, value, heading_xf)
+            sheet.set_panes_frozen(True) # frozen headings instead of split panes
+            sheet.set_horz_split_pos(rowx+1) # in general, freeze after last heading row
+            sheet.set_remove_splits(True) # if user does unfreeze, don't leave a split there
+        for row in data:
+            rowx += 1
+            for colx, value in enumerate(row):
+                sheet.write(rowx, colx, value, data_xfs[colx])
+            book.save(file_name)
 
+        
 class BNO055:
    BNO055_ADDRESS_A                 = 0x28
    BNO055_ADDRESS_B                 = 0x29
@@ -336,7 +403,7 @@ class BNO055:
 
       # Make sure we have the right device
       if self.readBytes(BNO055.BNO055_CHIP_ID_ADDR)[0] != BNO055.BNO055_ID:
-         time.sleep(1)  # Wait for the device to boot up
+         sleep(1)  # Wait for the device to boot up
          if self.readBytes(BNO055.BNO055_CHIP_ID_ADDR)[0] != BNO055.BNO055_ID:
             return False
 
@@ -345,38 +412,38 @@ class BNO055:
 
       # Trigger a reset and wait for the device to boot up again
       self.writeBytes(BNO055.BNO055_SYS_TRIGGER_ADDR, [0x20])
-      time.sleep(1)
+      sleep(1)
       while self.readBytes(BNO055.BNO055_CHIP_ID_ADDR)[0] != BNO055.BNO055_ID:
-         time.sleep(0.01)
-      time.sleep(0.05)
+         sleep(0.01)
+      sleep(0.05)
 
       # Set to normal power mode
       self.writeBytes(BNO055.BNO055_PWR_MODE_ADDR, [BNO055.POWER_MODE_NORMAL])
-      time.sleep(0.01)
+      sleep(0.01)
 
       self.writeBytes(BNO055.BNO055_PAGE_ID_ADDR, [0])
       self.writeBytes(BNO055.BNO055_SYS_TRIGGER_ADDR, [0])
-      time.sleep(0.01)
+      sleep(0.01)
 
       # Set the requested mode
       self.setMode(mode)
-      time.sleep(0.02)
+      sleep(0.02)
       return True
 
    def setMode(self, mode):
       self._mode = mode
       self.writeBytes(BNO055.BNO055_OPR_MODE_ADDR, [self._mode])
-      time.sleep(0.03)
+      sleep(0.03)
 
    def setExternalCrystalUse(self, useExternalCrystal = True):
       prevMode = self._mode
       self.setMode(BNO055.OPERATION_MODE_CONFIG)
-      time.sleep(0.025)
+      sleep(0.025)
       self.writeBytes(BNO055.BNO055_PAGE_ID_ADDR, [0])
       self.writeBytes(BNO055.BNO055_SYS_TRIGGER_ADDR, [0x80] if useExternalCrystal else [0])
-      time.sleep(0.01)
+      sleep(0.01)
       self.setMode(prevMode)
-      time.sleep(0.02)
+      sleep(0.02)
 
    def getSystemStatus(self):
       self.writeBytes(BNO055.BNO055_PAGE_ID_ADDR, [0])
@@ -399,9 +466,8 @@ class BNO055:
       return self.readBytes(BNO055.BNO055_TEMP_ADDR)[0]
 
    def getVector(self, vectorType):
-      buf = self.readBytes(vectorType, 6)         
-      xyz = struct.unpack('hhh', array.array('B', buf))
-
+      buf = self.readBytes(vectorType, 6)
+      xyz = (struct.unpack('3h', (struct.pack('6B', buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]))))
       if vectorType == BNO055.VECTOR_MAGNETOMETER: scalingFactor = 16.0
       elif vectorType == BNO055.VECTOR_GYROSCOPE:  scalingFactor = 900.0
       elif vectorType == BNO055.VECTOR_EULER:      scalingFactor = 16.0
@@ -411,7 +477,7 @@ class BNO055:
 
    def getQuat(self):
       buf = self.readBytes(BNO055.BNO055_QUATERNION_DATA_W_LSB_ADDR, 8)
-      wxyz = (struct.unpack('hhhh', array.array('B', buf)))
+      wxyz = (struct.unpack('4h',(struct.pack('8B', buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7]))))
       return tuple([i * (1.0 / (1 << 14)) for i in wxyz])
 
    def readBytes(self, register, numBytes=1):
