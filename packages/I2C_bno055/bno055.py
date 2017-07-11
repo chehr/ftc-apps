@@ -1,14 +1,31 @@
-# ! /usr/bin/env python3
+#! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 import os, struct, sys
 from datetime import datetime
 from time import *
 from TouchStyle import *
-
 import smbus, xlwt
 
+# Logging settings
+ACCEL_DATA          =   False
+MAG_DATA            =   True
+GYRO_DATA           =   True
+EULER_DATA          =   True
+QUATERNION_DATA     =   True
+LINEAR_ACCEL_DATA   =   False
+GRAVITY_DATA        =   True
+TEMP_DATA           =   True
+VISUAL_VIEW         =   True
+DATARATE            = 100       # Data sampling rate [ms]
+LOGGING_TIME        = 300        # Logging time [s]
 
+
+excel_xf = xlwt.easyxf
+data=[]
+t0 = time()
+t1 = t0
+appdir = os.path.dirname(os.path.realpath(__file__))
 
 
 class ValueWidget(QSlider):
@@ -36,9 +53,6 @@ class TouchGuiApplication(TouchApplication):
        
         self.vbox = QVBoxLayout()
         self.vbox.addStretch()
-
-        # Define Excel file
-        #excel_xf = xlwt.easyxf
         
         #Start I2C Communication
         try:
@@ -59,9 +73,7 @@ class TouchGuiApplication(TouchApplication):
             self.temp_lbl = TinyLabel("Temperature:", self.w)
             self.temp_lbl.setAlignment(Qt.AlignCenter)
             self.vbox.addWidget(self.temp_lbl)
-            
-
-            
+                 
             # Accelerometer
             lbl = TinyLabel("Accelerometer [mg]", self.w)
             lbl.setAlignment(Qt.AlignCenter)
@@ -86,8 +98,6 @@ class TouchGuiApplication(TouchApplication):
             self.acc_grid.addWidget(TinyLabel("Z:", self.acc_grid_w),2,0)
             self.acc_grid.addWidget(self.acc_z_value,2,1)
             self.vbox.addWidget(self.acc_grid_w)
-
-            
 
             # Magnetometer
             lbl = TinyLabel("Magnetometer [nT]", self.w)
@@ -114,6 +124,8 @@ class TouchGuiApplication(TouchApplication):
             self.mag_grid.addWidget(self.mag_z_value,2,1)
             self.vbox.addWidget(self.mag_grid_w)
 
+            #Todo: Auswahl hinzu ob Daten visual angezeigt werden oder gespeichert, um die Performance zu verbessern.
+
             # Print BNO055 software revision and other diagnostic data.
             accel_rev, mag_rev, gyro_rev, sw_rev, bl_rev = self.bno.getRevInfo()
             print('Software version:   {0}'.format(sw_rev))
@@ -121,76 +133,106 @@ class TouchGuiApplication(TouchApplication):
             print('Accelerometer ID:   0x{0:02X}'.format(accel_rev))
             print('Magnetometer ID:    0x{0:02X}'.format(mag_rev))
             print('Gyroscope ID:       0x{0:02X}\n'.format(gyro_rev))
-        
-
+  
             # start a qtimer to read the sensor data
             self.timer = QTimer(self)
             #self.timer.setSingleShot(False)
-            self.timer.timeout.connect(lambda: self.__on_timer()) # lambda will avoid the evaluation of the fuction call
-            self.timer.start(100)
+            self.timer.timeout.connect(lambda: self.__on_timer())   # lambda will avoid the evaluation of the fuction call
+            self.timer.start(DATARATE)                              # Sampling rate
 
-            global t0, excel_xf, data
-            excel_xf = xlwt.easyxf
-            data=[]
-            t0 = time()
             print("\nstart: %s" % ctime(t0))
-                  
-            
+           
         self.vbox.addStretch()
         self.w.centralWidget.setLayout(self.vbox)
 
         self.w.show()
         self.exec_()
-
-
-        
+      
     def __on_timer(self):
         # get the accelerometer and magnetometer values
-        a = self.bno.getVector(BNO055.VECTOR_ACCELEROMETER) # Tuple
-        self.acc_x_value.setValue(a[0])
-        self.acc_y_value.setValue(a[1])
-        self.acc_z_value.setValue(a[2])
-        m = self.bno.getVector(BNO055.VECTOR_MAGNETOMETER) # Tuple
-        self.mag_x_value.setValue(m[0])
-        self.mag_y_value.setValue(m[1])
-        self.mag_z_value.setValue(m[2])
-
-        # get Temperature value
-        t=self.bno.getTemp()
-        self.temp_lbl.setText("Temperature: {0:d}°C".format(t))
-
-        # show accelerometer and magnetometer values
-        #(ax,ay,az)=a
-        axyz=str(a)
-        self.axyz_lbl.setText("xyz: {0:20}".format(axyz))
-        mxyz=str(m)
-        self.mxyz_lbl.setText("xyz: {0:20}".format(mxyz))
+        if ACCEL_DATA:
+            a = self.bno.getVector(BNO055.VECTOR_ACCELEROMETER)     # Tuple
+            self.acc_x_value.setValue(a[0])
+            self.acc_y_value.setValue(a[1])
+            self.acc_z_value.setValue(a[2])
+            axyz=str(a)
+            self.axyz_lbl.setText("xyz: {0:20}".format(axyz))
+        if MAG_DATA:   
+            m = self.bno.getVector(BNO055.VECTOR_MAGNETOMETER)      # Tuple
+            self.mag_x_value.setValue(m[0])
+            self.mag_y_value.setValue(m[1])
+            self.mag_z_value.setValue(m[2])
+            mxyz=str(m)
+            self.mxyz_lbl.setText("xyz: {0:20}".format(mxyz))
+        if GYRO_DATA:
+            g = self.bno.getVector(BNO055.VECTOR_GYROSCOPE)         # Tuple
+        if EULER_DATA:
+            e = self.bno.getVector(BNO055.VECTOR_EULER)             # Tuple
+        if QUATERNION_DATA:
+            q=self.bno.getQuat()
+        if LINEAR_ACCEL_DATA:
+            l = self.bno.getVector(BNO055.VECTOR_LINEARACCEL)       # Tuple
+        if GRAVITY_DATA:
+            ag = self.bno.getVector(BNO055.VECTOR_GRAVITY)          # Tuple
+        if TEMP_DATA:
+            t=self.bno.getTemp()
+            self.temp_lbl.setText("Temperature: {0:d}°C".format(t))
 
         # Read Sensor data for SD-Card storage as Excel file
-        sensordata = a
-        dataline=[datetime.now()]
-        dataline.extend(list(a))
-        dataline.extend(list(m))
+        global t0, t1, data
+        dataline=[datetime.now(),time()-t1]
+        if ACCEL_DATA:
+            dataline.extend(list(a))
+        if MAG_DATA:
+            dataline.extend(list(m))
+        if GYRO_DATA:
+            dataline.extend(list(g))
+        if EULER_DATA:
+            dataline.extend(list(e))
+        if QUATERNION_DATA:
+            dataline.extend(list(q))
+        if LINEAR_ACCEL_DATA:
+            dataline.extend(list(l))
+        if GRAVITY_DATA:
+            dataline.extend(list(ag))
+        if TEMP_DATA:
+            dataline.append(t)
         data.extend([dataline])
         
         t1 = time()
         dt = t1-t0
-        if dt >=10:  # 10s Data logging time
+        if dt >= LOGGING_TIME:                                         # Data logging time
             self.timer.stop()
             print("since starting elapsed %.2f s" % (dt))
-            first_line = ['Time', 'AX [g]', 'AY [g]', 'AZ [g]', 'MX [nT]', 'MY [nT]', 'MZ [nT]', 'GX [deg/s]', 'GY [deg/s]', 'GZ [deg/s]',
-                        'Heading [0deg..360deg]', 'Roll [-90deg..+90deg]', 'Pitch [-180deg..+180deg]', 'QW [-]', 'QX [-]', 'QY [-]', 'QZ [-]', 'LAX [g]', 'LAY [g]', 'LAZ [g]',
-                        'GAX [g]', 'GAY [g]', 'GAZ [g]', 'Temperature [deg C]']
-            kinds =  'date int int int int int int int int int int int'.split()
+            first_line = ['Time [s]', "dt [s]"]
+            if ACCEL_DATA:
+                first_line.extend(['AX [mg]', 'AY [mg]', 'AZ [mg]'])
+            if MAG_DATA:
+                first_line.extend(['MX [nT]', 'MY [nT]', 'MZ [nT]'])
+            if GYRO_DATA:
+                first_line.extend(['GX [deg/s]', 'GY [deg/s]', 'GZ [deg/s]'])
+            if EULER_DATA:
+                first_line.extend(['Heading [0deg..360deg]', 'Roll [-90deg..+90deg]', 'Pitch [-180deg..+180deg]'])
+            if QUATERNION_DATA:
+                first_line.extend(['QW [-]', 'QX [-]', 'QY [-]', 'QZ [-]'])              
+            if LINEAR_ACCEL_DATA:
+                first_line.extend(['LAX [mg]', 'LAY [mg]', 'LAZ [mg]'])
+            if GRAVITY_DATA:
+                first_line.extend(['GAX [mg]', 'GAY [mg]', 'GAZ [mg]'])
+            if TEMP_DATA:
+                first_line.append('Temperature [deg C]')               
+
+            kinds =  'date int int int int int int int int int int int int int int int int int int int int int int int int'.split()
             first_line_xf = excel_xf('font: bold on; align: wrap on, vert centre, horiz center')
             kind_to_xf_map = {
                         'date': excel_xf(num_format_str='hh:mm:ss'), #DD.MM.YYYY removed
                         'int': excel_xf(num_format_str='0.000'),
                         'text': excel_xf(),
                         }
-            data_xfs = [kind_to_xf_map[k] for k in kinds]
+            data_xfs = [kind_to_xf_map[k] for k in kinds] 
             print("Daten auf SD Karte schreiben...")
-            self.__write_xls('Datalogger.xls', 'BNO055', first_line, data, first_line_xf, data_xfs)
+            #self.__write_xls('home/ftc/apps/a9fb0a90-29e9-11e7-9598-0800200c9a66/Datalogger.xls', 'BNO055', first_line, data, first_line_xf, data_xfs)
+            self.__write_xls(appdir+'/Datalogger.xls', 'BNO055', first_line, data, first_line_xf, data_xfs)
                         
     # Write data to Excel file
     def __write_xls(self, file_name, sheet_name, headings, data, heading_xf, data_xfs):

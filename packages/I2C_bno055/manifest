@@ -9,3 +9,4 @@ managed: yes
 uuid: a9fb0a90-29e9-11e7-9598-0800200c9a66
 version: 0.3
 firmware: >=0.9.1
+html: Datalogger.xls
